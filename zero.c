@@ -51,19 +51,20 @@ int main(int argc, char * argv[]) {
   int ierr;
   int pzeros=0;
   int n=0;
-  if(argc<1) {
-    n=106954752;
+  if(argc==1) {
+    n=134217728;
   }
   else {
     n=atoi(argv[1]);
   }
+
   int m=0;
-  double t0=omp_get_wtime(); 
   double *data=malloc(sizeof(double)*n);
   double *ddata=malloc(sizeof(double)*n);
   char *cdata=malloc(sizeof(double)*n);
 
   for(pzeros=10;pzeros<=100;pzeros=pzeros+10) {
+    double t0=omp_get_wtime(); 
     generate_nzeros(data,n,pzeros);
     double t1=omp_get_wtime(); 
     printf("%f seconds for generating data\n",t1-t0);
