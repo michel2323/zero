@@ -39,7 +39,7 @@ void zero_compress_(double *in, int *n_, char *out, int *m_, int *ierr) {
     }
   }
   *m_=(int) (c+1);
-  printf("Compressed %ld to %ld bytes.\n",n*8,c+1);
+  /*printf("Compressed %ld to %ld bytes.\n",n*8,c+1);*/
 }
 
 void zero_decompress_(char *in, double *out, long int *n_, int *ierr) {

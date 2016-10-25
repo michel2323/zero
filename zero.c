@@ -4,15 +4,18 @@
 #include <mpi.h>
 #include "zero_compression.h"
 
+int rank=0;
+
 double * generate_nzeros(double *res,int n, int pzeros) {
   int i=0;
   int r=0;
-  printf("Generating %d doubles of data.\n", n);
+  if(rank==0)
+    printf("Generating %d doubles of data.\n", n);
   if(pzeros < 0 || pzeros > 100) {
     printf("Wrong bounds for 0 <= pzeros=%d <=100.\n", pzeros); 
     exit(1);
   }
-#pragma omp parallel for
+  /*#pragma omp parallel for*/
   for(i=0;i<n;i=i+1) {
     int seed;
     r = rand_r(&seed)%100;
@@ -42,9 +45,11 @@ void diff(double *data1, double *data2, int size) {
     }
   }
   if(diff==0) {
-    printf("The data fields do match!\n");
+    if(rank==0)
+      printf("The data fields do match!\n");
   } else {
-    printf("The data fields are different %d times.\n",cdiff);
+    if(rank==0)
+      printf("The data fields are different %d times.\n",cdiff);
   }
 }
 
@@ -53,7 +58,6 @@ int main(int argc, char * argv[]) {
   int ierr;
   int pzeros=0;
   int n=0;
-  int rank=0;
   if(argc==1) {
     n=134217728;
   }
