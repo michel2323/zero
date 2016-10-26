@@ -5,6 +5,7 @@
 #include "zero_compression.h"
 
 int rank=0;
+int np=0;
 
 double * generate_nzeros(double *res,int n, int pzeros) {
   int i=0;
@@ -59,10 +60,12 @@ int main(int argc, char * argv[]) {
   int pzeros=0;
   int n=0;
   if(argc==1) {
-    n=134217728;
+    /*n=134217728;*/
+    n=8388608;
   }
   else {
     n=atoi(argv[1]);
+    n=n*1024*128;
   }
 
   int m=0;
@@ -71,6 +74,7 @@ int main(int argc, char * argv[]) {
   char *cdata=malloc(sizeof(double)*n);
 
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  MPI_Comm_size(MPI_COMM_WORLD,&np);
 
   for(pzeros=10;pzeros<=100;pzeros=pzeros+10) {
     MPI_Barrier(MPI_COMM_WORLD);
@@ -78,13 +82,13 @@ int main(int argc, char * argv[]) {
     generate_nzeros(data,n,pzeros);
     double t1=omp_get_wtime(); 
     if(rank==0)
-      printf("%f seconds for generating data\n",t1-t0);
+      printf("%f seconds for generating %d MB of data\n",t1-t0,(n*8)/(1024*1024));
     MPI_Barrier(MPI_COMM_WORLD);
     t0=omp_get_wtime(); 
     zero_compress_(data, &n, cdata, &m, &ierr);
     t1=omp_get_wtime(); 
     if(rank==0)
-      printf("%f seconds for compressing data\n",t1-t0);
+      printf("%f seconds for compressing data at %f MB/s.\n",t1-t0,((((double) n)*8*((double) np))/(t1-t0))/(1024.*1024.));
     if(m>n*8) {
       printf("Compressed data is bigger than uncompressed data! %d %d\n", n*8,m);
     }
@@ -94,7 +98,7 @@ int main(int argc, char * argv[]) {
     zero_decompress(cdata, ddata, &nl, &ierr);
     t1=omp_get_wtime(); 
     if(rank==0)
-      printf("%f seconds for decompressing data\n",t1-t0);
+      printf("%f seconds for decompressing data at %f MB/s.\n",t1-t0,((((double) nl)*8*((double) np))/(t1-t0))/(1024.*1024.));
     diff(data,ddata,n);
   }
   free(data); free(ddata), free(cdata);
